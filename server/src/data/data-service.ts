@@ -11,7 +11,7 @@ import analyticService from "../analytics/analytics-service";
 class DataService {
     async createData(credentials: DataCredentials) {
         await DataModel.create(credentials);
-        await analyticService.detectAnomalies(credentials.object, credentials.user.toString());
+        await analyticService.checkAndNotifyAnomalies(credentials.object);
     }
 
     async fetchUserData(userId: string): Promise<DataResponse[]> {
@@ -115,7 +115,7 @@ class DataService {
     
         console.log(`Generated ${dataToInsert.length} instant records for object ${objectId}`);
         await DataModel.insertMany(dataToInsert);
-        await analyticService.detectAnomalies(objectId, userId);
+        await analyticService.checkAndNotifyAnomalies(objectId);
     }
     
 }

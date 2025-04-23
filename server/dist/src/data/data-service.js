@@ -23,7 +23,7 @@ class DataService {
     createData(credentials) {
         return __awaiter(this, void 0, void 0, function* () {
             yield data_model_1.default.create(credentials);
-            yield analytics_service_1.default.detectAnomalies(credentials.object, credentials.user.toString());
+            yield analytics_service_1.default.checkAndNotifyAnomalies(credentials.object);
         });
     }
     fetchUserData(userId) {
@@ -123,7 +123,7 @@ class DataService {
             });
             console.log(`Generated ${dataToInsert.length} instant records for object ${objectId}`);
             yield data_model_1.default.insertMany(dataToInsert);
-            yield analytics_service_1.default.detectAnomalies(objectId, userId);
+            yield analytics_service_1.default.checkAndNotifyAnomalies(objectId);
         });
     }
 }

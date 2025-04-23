@@ -214,49 +214,26 @@ class AnalyticsService {
             return result;
         });
     }
-    detectAnomalies(objectId, userId) {
+    checkAndNotifyAnomalies(objectId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const now = new Date();
-            const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            const [currentAmountResult] = yield data_model_1.default.aggregate([
-                {
-                    $match: {
-                        object: new mongoose_1.default.Types.ObjectId(objectId),
-                        date: { $gte: oneHourAgo }
-                    }
-                },
-                {
-                    $group: {
-                        _id: null,
-                        total: { $sum: "$amount" }
-                    }
-                }
-            ]);
-            const [averageAmountResult] = yield data_model_1.default.aggregate([
-                {
-                    $match: {
-                        object: new mongoose_1.default.Types.ObjectId(objectId),
-                        date: { $gte: sevenDaysAgo, $lt: oneHourAgo }
-                    }
-                },
-                {
-                    $group: {
-                        _id: { day: { $dayOfYear: "$date" } },
-                        total: { $sum: "$amount" }
-                    }
-                },
-                {
-                    $group: {
-                        _id: null,
-                        avg: { $avg: "$total" }
-                    }
-                }
-            ]);
-            const currentAmount = (currentAmountResult === null || currentAmountResult === void 0 ? void 0 : currentAmountResult.total) || 0;
-            const averageAmount = (averageAmountResult === null || averageAmountResult === void 0 ? void 0 : averageAmountResult.avg) || 0;
-            if (averageAmount > 0 && currentAmount > averageAmount * 1.5) {
-                yield notification_service_1.default.createNotification(new mongoose_1.default.Types.ObjectId(userId), `Виявлено аномальне споживання: ${currentAmount.toFixed(2)} (в середньому ${averageAmount.toFixed(2)})`);
+            const endDate = new Date();
+            const startDate = (0, date_fns_1.subDays)(endDate, 7);
+            const records = (yield data_model_1.default.find({
+                object: new mongoose_1.default.Types.ObjectId(objectId),
+                date: { $gte: startDate, $lte: endDate }
+            }).sort({ date: -1 }));
+            if (records.length < 2)
+                return; // Мусимо мати принаймні 1 попереднє + останнє
+            const lastRecord = records[0];
+            const previousRecords = records.slice(1);
+            const avg = previousRecords.reduce((sum, r) => sum + r.amount, 0) / previousRecords.length;
+            const diff = lastRecord.amount - avg;
+            const userId = lastRecord.user;
+            if (diff > avg * 0.5 && diff <= avg * 1.5) {
+                yield notification_service_1.default.createNotification(userId, `Споживання підвищено: ${lastRecord.amount} КВт/год, середнє: ${avg.toFixed(1)} КВт/год.`);
+            }
+            else if (diff > avg * 1.5) {
+                yield notification_service_1.default.createNotification(userId, `⚠️ АНОМАЛІЯ: Різке підвищення споживання до ${lastRecord.amount} КВт/год. Середнє: ${avg.toFixed(1)} КВт/год.`);
             }
         });
     }
