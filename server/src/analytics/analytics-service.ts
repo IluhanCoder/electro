@@ -76,23 +76,22 @@ class AnalyticsService {
         return result;
       }
       
-      async calculateMonthAverage({
+      async calculateAverage({
         startDate,
         endDate,
         userId,
-        objectId
+        objectId,
+        daily
       }: analyticsCredentials): Promise<AnalyticsResponse[]> {
-        const intervalSeconds = this.intervalSeconds;
-
         const result: AnalyticsResponse[] = [];
         const current = new Date(startDate);
       
-        while (current <= endDate) {
+        while (current <= new Date(endDate)) {
           let from: Date, to: Date;
       
-          if (intervalSeconds) {
-            from = new Date(current);
-            to = new Date(current.getTime() + intervalSeconds * 1000);
+          if (daily) {
+            from = startOfDay(current);
+            to = endOfDay(current);
           } else {
             from = startOfMonth(current);
             to = endOfMonth(current);
@@ -119,21 +118,13 @@ class AnalyticsService {
           const average = docs.length > 0 ? docs[0].total / docs[0].count : 0;
       
           result.push({
-            ...(intervalSeconds
-              ? {
-                  hour: current.getHours(),
-                  minute: current.getMinutes(),
-                  second: current.getSeconds(),
-                  
-                }
-              : {}),
-              day: current.getDate(),
+            day: current.getDate(),
             month: current.getMonth() + 1,
             amount: average
           });
       
-          if (intervalSeconds) {
-            current.setSeconds(current.getSeconds() + intervalSeconds);
+          if (daily) {
+            current.setDate(current.getDate() + 1);
           } else {
             current.setMonth(current.getMonth() + 1);
           }
@@ -141,6 +132,7 @@ class AnalyticsService {
       
         return result;
       }
+      
       
 }
 

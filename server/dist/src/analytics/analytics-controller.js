@@ -27,11 +27,11 @@ class AnalyticsController {
             }
         });
     }
-    caclulateMonthAverage(req, res, next) {
+    caclulateAverage(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { credentials } = req.body;
-                const analytics = yield analytics_service_1.default.calculateMonthAverage(credentials);
+                const analytics = yield analytics_service_1.default.calculateAverage(credentials);
                 return res.status(200).json({ analytics, message: "success" });
             }
             catch (error) {

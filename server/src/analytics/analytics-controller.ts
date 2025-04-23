@@ -14,10 +14,10 @@ class AnalyticsController {
         }
     }
 
-    async caclulateMonthAverage(req: Request, res: Response, next: NextFunction) {
+    async caclulateAverage(req: Request, res: Response, next: NextFunction) {
         try {
             const {credentials} = req.body as {credentials: analyticsCredentials};
-            const analytics = await analyticService.calculateMonthAverage(credentials);
+            const analytics = await analyticService.calculateAverage(credentials);
             return res.status(200).json({analytics, message: "success"});
         } catch (error) {
             next(error);

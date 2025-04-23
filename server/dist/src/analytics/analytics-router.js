@@ -7,6 +7,6 @@ const express_1 = require("express");
 const analytics_controller_1 = __importDefault(require("./analytics-controller"));
 const analyticsRouter = (0, express_1.Router)();
 analyticsRouter.post("/amount", analytics_controller_1.default.caclulateAmount);
-analyticsRouter.post("/average", analytics_controller_1.default.caclulateMonthAverage);
+analyticsRouter.post("/average", analytics_controller_1.default.caclulateAverage);
 exports.default = analyticsRouter;
 //# sourceMappingURL=analytics-router.js.map

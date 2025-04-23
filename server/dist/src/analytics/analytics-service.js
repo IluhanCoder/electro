@@ -71,16 +71,15 @@ class AnalyticsService {
             return result;
         });
     }
-    calculateMonthAverage(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate, userId, objectId }) {
-            const intervalSeconds = this.intervalSeconds;
+    calculateAverage(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate, userId, objectId, daily }) {
             const result = [];
             const current = new Date(startDate);
-            while (current <= endDate) {
+            while (current <= new Date(endDate)) {
                 let from, to;
-                if (intervalSeconds) {
-                    from = new Date(current);
-                    to = new Date(current.getTime() + intervalSeconds * 1000);
+                if (daily) {
+                    from = (0, date_fns_1.startOfDay)(current);
+                    to = (0, date_fns_1.endOfDay)(current);
                 }
                 else {
                     from = (0, date_fns_1.startOfMonth)(current);
@@ -104,15 +103,13 @@ class AnalyticsService {
                     }
                 ]);
                 const average = docs.length > 0 ? docs[0].total / docs[0].count : 0;
-                result.push(Object.assign(Object.assign({}, (intervalSeconds
-                    ? {
-                        hour: current.getHours(),
-                        minute: current.getMinutes(),
-                        second: current.getSeconds(),
-                    }
-                    : {})), { day: current.getDate(), month: current.getMonth() + 1, amount: average }));
-                if (intervalSeconds) {
-                    current.setSeconds(current.getSeconds() + intervalSeconds);
+                result.push({
+                    day: current.getDate(),
+                    month: current.getMonth() + 1,
+                    amount: average
+                });
+                if (daily) {
+                    current.setDate(current.getDate() + 1);
                 }
                 else {
                     current.setMonth(current.getMonth() + 1);
