@@ -19,7 +19,7 @@ export default interface Data extends Document {
 }
 
 export interface DataCredentials extends Omit<Data, "_id" | "object"> {
-    objectId: string
+    object: string
 }
 
 export interface DataResponse extends Omit<Data, "user" | "object"> {

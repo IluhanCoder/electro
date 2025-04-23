@@ -6,11 +6,12 @@ import { Document } from "mongodb";
 import objectService from "../object/object-service";
 import { faker } from "@faker-js/faker";
 import ObjectModel from "../object/object-model";
+import analyticService from "../analytics/analytics-service";
 
 class DataService {
     async createData(credentials: DataCredentials) {
-        console.log(credentials);
         await DataModel.create(credentials);
+        await analyticService.detectAnomalies(credentials.object, credentials.user.toString());
     }
 
     async fetchUserData(userId: string): Promise<DataResponse[]> {
@@ -114,6 +115,7 @@ class DataService {
     
         console.log(`Generated ${dataToInsert.length} instant records for object ${objectId}`);
         await DataModel.insertMany(dataToInsert);
+        await analyticService.detectAnomalies(objectId, userId);
     }
     
 }

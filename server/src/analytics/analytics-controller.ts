@@ -33,6 +33,24 @@ class AnalyticsController {
             next(error);
         }
     }
+
+    async heatmapPeakLoad(req: Request, res: Response, next: NextFunction) {
+        try {
+          const { objectId, startDate, endDate } = req.body.credentials;
+      
+          const result = await analyticService.getPeakLoadHeatmap({
+            objectId,
+            startDate,
+            endDate
+          });
+      
+          res.status(200).json({ data: result, message: "success" });
+        } catch (error) {
+          next(error);
+        }
+      }
+      
+    
 }
 
 const analyticsController = new AnalyticsController();

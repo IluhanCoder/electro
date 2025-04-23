@@ -18,11 +18,12 @@ const data_model_1 = __importDefault(require("./data-model"));
 const data_types_1 = require("./data-types");
 const faker_1 = require("@faker-js/faker");
 const object_model_1 = __importDefault(require("../object/object-model"));
+const analytics_service_1 = __importDefault(require("../analytics/analytics-service"));
 class DataService {
     createData(credentials) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(credentials);
             yield data_model_1.default.create(credentials);
+            yield analytics_service_1.default.detectAnomalies(credentials.object, credentials.user.toString());
         });
     }
     fetchUserData(userId) {
@@ -122,6 +123,7 @@ class DataService {
             });
             console.log(`Generated ${dataToInsert.length} instant records for object ${objectId}`);
             yield data_model_1.default.insertMany(dataToInsert);
+            yield analytics_service_1.default.detectAnomalies(objectId, userId);
         });
     }
 }

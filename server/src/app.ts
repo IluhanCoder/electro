@@ -9,6 +9,7 @@ import userRouter from './user/user-router';
 import objectRouter from './object/object-router';
 import dataRouter from './data/data-router';
 import analyticsRouter from './analytics/analytics-router';
+import notificationRouter from './notifications/notification-router';
 
 config();
 
@@ -36,6 +37,7 @@ app.use("/user", userRouter);
 app.use("/object", objectRouter);
 app.use("/data", dataRouter);
 app.use("/analytics", analyticsRouter);
+app.use("/notification", notificationRouter);
 
 app.get("/test", (req, res) => {res.status(400).json({message: "error"})});
 

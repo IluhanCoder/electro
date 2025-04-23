@@ -51,6 +51,22 @@ class AnalyticsController {
             }
         });
     }
+    heatmapPeakLoad(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { objectId, startDate, endDate } = req.body.credentials;
+                const result = yield analytics_service_1.default.getPeakLoadHeatmap({
+                    objectId,
+                    startDate,
+                    endDate
+                });
+                res.status(200).json({ data: result, message: "success" });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
 }
 const analyticsController = new AnalyticsController();
 (0, bind_all_1.default)(analyticsController);

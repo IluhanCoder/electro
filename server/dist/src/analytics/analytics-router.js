@@ -9,5 +9,6 @@ const analyticsRouter = (0, express_1.Router)();
 analyticsRouter.post("/amount", analytics_controller_1.default.caclulateAmount);
 analyticsRouter.post("/average", analytics_controller_1.default.caclulateAverage);
 analyticsRouter.post("/amount-categorised", analytics_controller_1.default.calculateAmountCategorised);
+analyticsRouter.post("/heatmap", analytics_controller_1.default.heatmapPeakLoad);
 exports.default = analyticsRouter;
 //# sourceMappingURL=analytics-router.js.map

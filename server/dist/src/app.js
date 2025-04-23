@@ -14,6 +14,7 @@ const user_router_1 = __importDefault(require("./user/user-router"));
 const object_router_1 = __importDefault(require("./object/object-router"));
 const data_router_1 = __importDefault(require("./data/data-router"));
 const analytics_router_1 = __importDefault(require("./analytics/analytics-router"));
+const notification_router_1 = __importDefault(require("./notifications/notification-router"));
 (0, dotenv_1.config)();
 const app = (0, express_1.default)();
 const port = process.env.PORT;
@@ -30,6 +31,7 @@ app.use("/user", user_router_1.default);
 app.use("/object", object_router_1.default);
 app.use("/data", data_router_1.default);
 app.use("/analytics", analytics_router_1.default);
+app.use("/notification", notification_router_1.default);
 app.get("/test", (req, res) => { res.status(400).json({ message: "error" }); });
 app.use(error_handler_1.errorHandler);
 app.listen(port, () => {

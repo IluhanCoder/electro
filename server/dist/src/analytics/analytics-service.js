@@ -173,10 +173,98 @@ class AnalyticsService {
             return result;
         });
     }
+    getPeakLoadHeatmap(credentials) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { objectId, startDate, endDate } = credentials;
+            const result = yield data_model_1.default.aggregate([
+                {
+                    $match: {
+                        object: new mongoose_1.default.Types.ObjectId(objectId),
+                        date: { $gte: new Date(startDate), $lte: new Date(endDate) }
+                    }
+                },
+                {
+                    $project: {
+                        hour: { $hour: "$date" },
+                        weekday: { $dayOfWeek: "$date" }, // 1 = неділя, 7 = субота
+                        amount: 1
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            hour: "$hour",
+                            weekday: { $subtract: ["$weekday", 1] } // зробимо 0 = неділя, 6 = субота
+                        },
+                        totalAmount: { $sum: "$amount" }
+                    }
+                },
+                {
+                    $project: {
+                        hour: "$_id.hour",
+                        weekday: "$_id.weekday",
+                        totalAmount: 1,
+                        _id: 0
+                    }
+                },
+                {
+                    $sort: { weekday: 1, hour: 1 }
+                }
+            ]);
+            return result;
+        });
+    }
+    detectAnomalies(objectId, userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const now = new Date();
+            const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const [currentAmountResult] = yield data_model_1.default.aggregate([
+                {
+                    $match: {
+                        object: new mongoose_1.default.Types.ObjectId(objectId),
+                        date: { $gte: oneHourAgo }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: "$amount" }
+                    }
+                }
+            ]);
+            const [averageAmountResult] = yield data_model_1.default.aggregate([
+                {
+                    $match: {
+                        object: new mongoose_1.default.Types.ObjectId(objectId),
+                        date: { $gte: sevenDaysAgo, $lt: oneHourAgo }
+                    }
+                },
+                {
+                    $group: {
+                        _id: { day: { $dayOfYear: "$date" } },
+                        total: { $sum: "$amount" }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        avg: { $avg: "$total" }
+                    }
+                }
+            ]);
+            const currentAmount = (currentAmountResult === null || currentAmountResult === void 0 ? void 0 : currentAmountResult.total) || 0;
+            const averageAmount = (averageAmountResult === null || averageAmountResult === void 0 ? void 0 : averageAmountResult.avg) || 0;
+            if (averageAmount > 0 && currentAmount > averageAmount * 1.5) {
+                yield notification_service_1.default.createNotification(new mongoose_1.default.Types.ObjectId(userId), `Виявлено аномальне споживання: ${currentAmount.toFixed(2)} (в середньому ${averageAmount.toFixed(2)})`);
+            }
+        });
+    }
 }
 const analyticService = new AnalyticsService();
 const bind_all_1 = __importDefault(require("../helpers/bind-all"));
 const data_types_1 = require("../data/data-types");
+const notification_service_1 = __importDefault(require("../notifications/notification-service"));
 (0, bind_all_1.default)(analyticService);
 exports.default = analyticService;
 //# sourceMappingURL=analytics-service.js.map
