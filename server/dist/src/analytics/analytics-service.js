@@ -16,18 +16,71 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const data_model_1 = __importDefault(require("../data/data-model"));
 const date_fns_1 = require("date-fns");
 class AnalyticsService {
+    constructor() {
+        this.intervalSeconds = 20;
+    }
     calculateAmount(_a) {
         return __awaiter(this, arguments, void 0, function* ({ startDate, endDate, daily, userId, objectId }) {
+            const intervalSeconds = this.intervalSeconds;
             const result = [];
             const current = new Date(startDate);
-            console.log(current);
-            console.log(endDate);
-            console.log(new Date(current).getTime() <= new Date(endDate).getTime());
-            while (new Date(current).getTime() <= new Date(endDate).getTime()) {
+            while (current <= new Date(endDate)) {
                 let from, to;
                 if (daily) {
                     from = (0, date_fns_1.startOfDay)(current);
                     to = (0, date_fns_1.endOfDay)(current);
+                }
+                else {
+                    from = new Date(current);
+                    to = new Date(current.getTime() + intervalSeconds * 1000);
+                }
+                const filter = {
+                    date: { $gte: from, $lte: to }
+                };
+                if (userId)
+                    filter.user = new mongoose_1.default.Types.ObjectId(userId);
+                if (objectId)
+                    filter.object = new mongoose_1.default.Types.ObjectId(objectId);
+                console.log(filter);
+                const docs = yield data_model_1.default.aggregate([
+                    { $match: filter },
+                    {
+                        $group: {
+                            _id: null,
+                            total: { $sum: "$amount" }
+                        }
+                    }
+                ]);
+                console.log(docs);
+                const amount = docs.length > 0 ? docs[0].total : 0;
+                result.push(Object.assign(Object.assign({}, (daily
+                    ? { day: current.getDate() }
+                    : {
+                        hour: current.getHours(),
+                        minute: current.getMinutes(),
+                        second: current.getSeconds(),
+                        day: current.getDate()
+                    })), { month: current.getMonth() + 1, amount }));
+                if (daily) {
+                    current.setDate(current.getDate() + 1);
+                }
+                else {
+                    current.setSeconds(current.getSeconds() + intervalSeconds);
+                }
+            }
+            return result;
+        });
+    }
+    calculateMonthAverage(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate, userId, objectId }) {
+            const intervalSeconds = this.intervalSeconds;
+            const result = [];
+            const current = new Date(startDate);
+            while (current <= endDate) {
+                let from, to;
+                if (intervalSeconds) {
+                    from = new Date(current);
+                    to = new Date(current.getTime() + intervalSeconds * 1000);
                 }
                 else {
                     from = (0, date_fns_1.startOfMonth)(current);
@@ -45,49 +98,25 @@ class AnalyticsService {
                     {
                         $group: {
                             _id: null,
-                            total: { $sum: "$amount" }
-                        }
-                    }
-                ]);
-                const amount = docs.length > 0 ? docs[0].total : 0;
-                result.push(Object.assign(Object.assign({}, (daily ? { day: current.getDate() } : {})), { month: current.getMonth() + 1, amount }));
-                current.setDate(current.getDate() + (daily ? 1 : 32));
-                if (!daily)
-                    current.setDate(1); // після 32 – наступне число в місяці, скидаємо на 1
-            }
-            return result;
-        });
-    }
-    calculateMonthAverage(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate, userId, objectId }) {
-            const result = [];
-            const current = new Date(startDate);
-            while (current <= endDate) {
-                const from = (0, date_fns_1.startOfMonth)(current);
-                const to = (0, date_fns_1.endOfMonth)(current);
-                const filter = {
-                    date: { $gte: from, $lte: to }
-                };
-                if (userId)
-                    filter.user = userId;
-                if (objectId)
-                    filter.object = objectId;
-                const docs = yield data_model_1.default.aggregate([
-                    { $match: filter },
-                    {
-                        $group: {
-                            _id: null,
                             total: { $sum: "$amount" },
                             count: { $sum: 1 }
                         }
                     }
                 ]);
                 const average = docs.length > 0 ? docs[0].total / docs[0].count : 0;
-                result.push({
-                    month: current.getMonth() + 1,
-                    amount: average
-                });
-                current.setMonth(current.getMonth() + 1);
+                result.push(Object.assign(Object.assign({}, (intervalSeconds
+                    ? {
+                        hour: current.getHours(),
+                        minute: current.getMinutes(),
+                        second: current.getSeconds(),
+                    }
+                    : {})), { day: current.getDate(), month: current.getMonth() + 1, amount: average }));
+                if (intervalSeconds) {
+                    current.setSeconds(current.getSeconds() + intervalSeconds);
+                }
+                else {
+                    current.setMonth(current.getMonth() + 1);
+                }
             }
             return result;
         });

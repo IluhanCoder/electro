@@ -7,7 +7,10 @@ export interface analyticsCredentials {
 }
   
 export interface AnalyticsResponse {
-    day?: number;
+    second?: number;
+    minute?: number;
+    hour?: number;
+    day: number;
     month: number;
     amount: number;
 }
