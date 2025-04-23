@@ -50,8 +50,6 @@ class DataService {
         await DataModel.findByIdAndDelete(dataId);
     }
 
-
-
     async generateDataForUser(userId: string, objectId: string) {
         const INTERVAL_MS = 20 * 1000;
         const MINUTES_BACK = 60;
@@ -92,6 +90,29 @@ class DataService {
         }
     
         console.log(`Generated ${dataToInsert.length} records for object ${objectId}`);
+        await DataModel.insertMany(dataToInsert);
+    }
+    
+    async generateInstantDataForUser(userId: string, objectId: string) {
+        const object = await ObjectModel.findById(objectId);
+        if (!object) {
+            throw new Error("Object not found.");
+        }
+    
+        const categories = Object.values(ConsumptionCategory);
+        const now = new Date();
+        const dataToInsert = categories.map(category => {
+            return new DataModel({
+                object: objectId,
+                user: userId,
+                amount: +(Math.random() * 10).toFixed(2),
+                category,
+                comment: faker.lorem.words(3),
+                date: now
+            });
+        });
+    
+        console.log(`Generated ${dataToInsert.length} instant records for object ${objectId}`);
         await DataModel.insertMany(dataToInsert);
     }
     

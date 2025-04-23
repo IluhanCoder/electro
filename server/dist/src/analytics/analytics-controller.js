@@ -27,6 +27,18 @@ class AnalyticsController {
             }
         });
     }
+    calculateAmountCategorised(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { credentials } = req.body;
+                const analytics = yield analytics_service_1.default.calculateAmountCategorised(credentials);
+                return res.status(200).json({ analytics, message: "success" });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
     caclulateAverage(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

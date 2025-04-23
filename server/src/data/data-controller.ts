@@ -83,6 +83,17 @@ class DataController {
             next(error);
         }
     }
+
+    async generateInstantDataforUser(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+        try {
+            const {user} = req;
+            const {objectId} = req.params;
+            await dataService.generateInstantDataForUser(user._id.toString(), objectId);
+            return res.status(200).json({message: "success"});
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 const dataController = new DataController();

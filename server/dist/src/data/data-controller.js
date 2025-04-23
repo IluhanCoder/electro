@@ -108,6 +108,19 @@ class DataController {
             }
         });
     }
+    generateInstantDataforUser(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { user } = req;
+                const { objectId } = req.params;
+                yield data_service_1.default.generateInstantDataForUser(user._id.toString(), objectId);
+                return res.status(200).json({ message: "success" });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
 }
 const dataController = new DataController();
 (0, bind_all_1.default)(dataController);

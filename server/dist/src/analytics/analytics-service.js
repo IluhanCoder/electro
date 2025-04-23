@@ -118,9 +118,65 @@ class AnalyticsService {
             return result;
         });
     }
+    calculateAmountCategorised(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ startDate, endDate, daily, userId, objectId }) {
+            const intervalSeconds = this.intervalSeconds;
+            const result = [];
+            const current = new Date(startDate);
+            const categories = Object.values(data_types_1.ConsumptionCategory);
+            while (current <= new Date(endDate)) {
+                let from, to;
+                if (daily) {
+                    from = (0, date_fns_1.startOfDay)(current);
+                    to = (0, date_fns_1.endOfDay)(current);
+                }
+                else {
+                    from = new Date(current);
+                    to = new Date(current.getTime() + intervalSeconds * 1000);
+                }
+                const entry = Object.assign(Object.assign({}, (daily
+                    ? {}
+                    : {
+                        hour: current.getHours(),
+                        minute: current.getMinutes(),
+                        second: current.getSeconds(),
+                    })), { day: current.getDate(), month: current.getMonth() + 1, heating: 0, lighting: 0, household: 0, media: 0 });
+                for (const category of categories) {
+                    const filter = {
+                        date: { $gte: from, $lte: to },
+                        category
+                    };
+                    if (userId)
+                        filter.user = new mongoose_1.default.Types.ObjectId(userId);
+                    if (objectId)
+                        filter.object = new mongoose_1.default.Types.ObjectId(objectId);
+                    const docs = yield data_model_1.default.aggregate([
+                        { $match: filter },
+                        {
+                            $group: {
+                                _id: null,
+                                total: { $sum: "$amount" }
+                            }
+                        }
+                    ]);
+                    const amount = docs.length > 0 ? docs[0].total : 0;
+                    entry[category] = amount;
+                }
+                result.push(entry);
+                if (daily) {
+                    current.setDate(current.getDate() + 1);
+                }
+                else {
+                    current.setSeconds(current.getSeconds() + intervalSeconds);
+                }
+            }
+            return result;
+        });
+    }
 }
 const analyticService = new AnalyticsService();
 const bind_all_1 = __importDefault(require("../helpers/bind-all"));
+const data_types_1 = require("../data/data-types");
 (0, bind_all_1.default)(analyticService);
 exports.default = analyticService;
 //# sourceMappingURL=analytics-service.js.map

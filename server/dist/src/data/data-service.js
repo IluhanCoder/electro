@@ -102,6 +102,28 @@ class DataService {
             yield data_model_1.default.insertMany(dataToInsert);
         });
     }
+    generateInstantDataForUser(userId, objectId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const object = yield object_model_1.default.findById(objectId);
+            if (!object) {
+                throw new Error("Object not found.");
+            }
+            const categories = Object.values(data_types_1.ConsumptionCategory);
+            const now = new Date();
+            const dataToInsert = categories.map(category => {
+                return new data_model_1.default({
+                    object: objectId,
+                    user: userId,
+                    amount: +(Math.random() * 10).toFixed(2),
+                    category,
+                    comment: faker_1.faker.lorem.words(3),
+                    date: now
+                });
+            });
+            console.log(`Generated ${dataToInsert.length} instant records for object ${objectId}`);
+            yield data_model_1.default.insertMany(dataToInsert);
+        });
+    }
 }
 const dataService = new DataService();
 (0, bind_all_1.default)(dataService);

@@ -1,3 +1,5 @@
+import { ConsumptionCategory } from "../data/data-types";
+
 export interface analyticsCredentials {
     startDate: Date;
     endDate: Date;
@@ -13,4 +15,16 @@ export interface AnalyticsResponse {
     day: number;
     month: number;
     amount: number;
+}
+
+export interface CategorisedAnalyticsResponse {
+    second?: number;
+    minute?: number;
+    hour?: number;
+    day: number;
+    month: number;
+    heating: number,
+    lighting: number,
+    household: number,
+    media: number
 }
