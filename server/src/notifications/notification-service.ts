@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import bindAll from "../helpers/bind-all";
 import NotificationModel from "./notification-model";
 import userService from "../user/user-service";
-import { sendEmail } from "../../email/email-service";
+import { sendEmail } from "../email/email-service";
 
 class NotificationService {
     async createNotification(receiver: mongoose.Types.ObjectId, message: string) {

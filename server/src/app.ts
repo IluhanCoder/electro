@@ -10,7 +10,7 @@ import objectRouter from './object/object-router';
 import dataRouter from './data/data-router';
 import analyticsRouter from './analytics/analytics-router';
 import notificationRouter from './notifications/notification-router';
-import { sendUserEmail } from '../email/email-controller';
+import { sendUserEmail } from './email/email-controller';
 
 config();
 

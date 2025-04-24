@@ -420,6 +420,6 @@ import notificationService from '../notifications/notification-service';
 import ObjectModel from '../object/object-model';
 import Object from '../object/object-types';
 import userService from '../user/user-service';
-import { sendEmail } from '../../email/email-service';
+import { sendEmail } from '../email/email-service';
 bindAll(analyticService);
 export default analyticService;

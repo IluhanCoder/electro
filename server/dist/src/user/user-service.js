@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_model_1 = __importDefault(require("./user-model"));
 const user_types_1 = require("./user-types");
-const email_service_1 = require("../../email/email-service");
+const email_service_1 = require("../email/email-service");
 exports.default = new class UserService {
     createUser(credentials) {
         return __awaiter(this, void 0, void 0, function* () {

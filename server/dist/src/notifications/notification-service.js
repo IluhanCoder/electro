@@ -16,7 +16,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const bind_all_1 = __importDefault(require("../helpers/bind-all"));
 const notification_model_1 = __importDefault(require("./notification-model"));
 const user_service_1 = __importDefault(require("../user/user-service"));
-const email_service_1 = require("../../email/email-service");
+const email_service_1 = require("../email/email-service");
 class NotificationService {
     createNotification(receiver, message) {
         return __awaiter(this, void 0, void 0, function* () {

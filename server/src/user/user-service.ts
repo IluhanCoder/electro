@@ -1,6 +1,6 @@
 import UserModel from "./user-model";
 import User, { Roles, UserCredentials } from "./user-types";
-import { sendEmail } from "../../email/email-service";
+import { sendEmail } from "../email/email-service";
 
 export default new class UserService {
     async createUser(credentials: UserCredentials): Promise<User> {
