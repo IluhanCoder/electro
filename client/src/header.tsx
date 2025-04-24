@@ -68,7 +68,7 @@ const Header = observer(() => {
               onClick={() => setShowAnalytics(!showAnalytics)}
               className="flex items-center gap-1 hover:underline"
             >
-              Аналітика
+              Електро-аналітика⚡️
               <ChevronDown size={16} />
             </button>
 
