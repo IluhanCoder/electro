@@ -4,6 +4,7 @@ import Object, { ObjectCredentials } from "./object-types";
 import ObjectError from "./object-error";
 import dataService from "../data/data-service";
 import { DataResponse } from "../data/data-types";
+import userService from "../user/user-service";
 
 export default new class ObjectService {
     async createObject(credentials: ObjectCredentials) {
@@ -16,7 +17,8 @@ export default new class ObjectService {
 
     async getUserObjects(userId: string): Promise<Object[]> {
         const convertedOwnerId = new mongoose.Types.ObjectId(userId);
-        return await ObjectModel.find({owner: convertedOwnerId});
+        const isAdmin = await userService.isAdmin(userId);
+        return isAdmin ? await ObjectModel.find() : await ObjectModel.find({owner: convertedOwnerId});
     }
 
     async deleteObjectById(objectId: string) {
@@ -25,5 +27,9 @@ export default new class ObjectService {
             await dataService.deleteDataById(data._id.toString())
         })
         await ObjectModel.findByIdAndDelete(objectId);
+    }
+
+    async setLimit(objectId: string, limit: number) {
+        await ObjectModel.findByIdAndUpdate(objectId, {limit});
     }
 }

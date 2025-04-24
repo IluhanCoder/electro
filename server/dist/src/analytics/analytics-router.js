@@ -10,5 +10,8 @@ analyticsRouter.post("/amount", analytics_controller_1.default.caclulateAmount);
 analyticsRouter.post("/average", analytics_controller_1.default.caclulateAverage);
 analyticsRouter.post("/amount-categorised", analytics_controller_1.default.calculateAmountCategorised);
 analyticsRouter.post("/heatmap", analytics_controller_1.default.heatmapPeakLoad);
+analyticsRouter.post("/regression", analytics_controller_1.default.generateRegression);
+analyticsRouter.post("/optimization-tips", analytics_controller_1.default.getOptimizationTips);
+analyticsRouter.post("/historical-comparison", analytics_controller_1.default.getHistoricalComparison);
 exports.default = analyticsRouter;
 //# sourceMappingURL=analytics-router.js.map

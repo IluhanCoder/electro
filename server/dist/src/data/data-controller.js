@@ -48,7 +48,7 @@ class DataController {
                 const { user } = req;
                 const userIsAdmin = yield user_service_1.default.isAdmin(user._id.toString());
                 if (userIsAdmin) {
-                    const data = data_service_1.default.fetchDataForAdmin();
+                    const data = yield data_service_1.default.fetchDataForAdmin();
                     return res.status(200).json({ data, message: "success" });
                 }
                 throw user_error_1.default.WrongRole();
@@ -99,8 +99,9 @@ class DataController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { user } = req;
+                const { counterIp } = req.body;
                 const { objectId } = req.params;
-                yield data_service_1.default.generateDataForUser(user._id.toString(), objectId);
+                yield data_service_1.default.generateDataForUser(user._id.toString(), objectId, counterIp);
                 return res.status(200).json({ message: "success" });
             }
             catch (error) {

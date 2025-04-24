@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const user_model_1 = __importDefault(require("./user-model"));
 const user_types_1 = require("./user-types");
+const email_service_1 = require("../../email/email-service");
 exports.default = new class UserService {
     createUser(credentials) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -34,6 +35,28 @@ exports.default = new class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield user_model_1.default.findById(userId);
             return user.role === "admin";
+        });
+    }
+    isSubmited(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_model_1.default.findById(userId);
+            return user.emailSubmited;
+        });
+    }
+    getEmail(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_model_1.default.findById(userId);
+            return user.email;
+        });
+    }
+    sendConfirmationEmail(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield user_model_1.default.findById(userId);
+            if (!user)
+                throw new Error("User not found");
+            const confirmationLink = `http://localhost:3000/confirm-email/${user._id}`;
+            const html = `<p>Підтвердьте свою електронну адресу, натиснувши <a href="${confirmationLink}">сюди</a>.</p>`;
+            yield (0, email_service_1.sendEmail)(user.email, "Підтвердження електронної пошти", html);
         });
     }
 };

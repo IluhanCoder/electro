@@ -19,11 +19,13 @@ const data_types_1 = require("./data-types");
 const faker_1 = require("@faker-js/faker");
 const object_model_1 = __importDefault(require("../object/object-model"));
 const analytics_service_1 = __importDefault(require("../analytics/analytics-service"));
+const counter_model_1 = __importDefault(require("./counter-model"));
 class DataService {
     createData(credentials) {
         return __awaiter(this, void 0, void 0, function* () {
             yield data_model_1.default.create(credentials);
             yield analytics_service_1.default.checkAndNotifyAnomalies(credentials.object);
+            yield analytics_service_1.default.checkDailyLimit(credentials.object);
         });
     }
     fetchUserData(userId) {
@@ -68,7 +70,7 @@ class DataService {
             yield data_model_1.default.findByIdAndDelete(dataId);
         });
     }
-    generateDataForUser(userId, objectId) {
+    generateDataForUser(userId, objectId, counterIp) {
         return __awaiter(this, void 0, void 0, function* () {
             const INTERVAL_MS = 20 * 1000;
             const MINUTES_BACK = 60;
@@ -101,6 +103,8 @@ class DataService {
             }
             console.log(`Generated ${dataToInsert.length} records for object ${objectId}`);
             yield data_model_1.default.insertMany(dataToInsert);
+            if (counterIp)
+                yield counter_model_1.default.create({ ip: counterIp, user: new mongoose_1.default.Types.ObjectId(userId), object: object._id });
         });
     }
     generateInstantDataForUser(userId, objectId) {
@@ -124,6 +128,7 @@ class DataService {
             console.log(`Generated ${dataToInsert.length} instant records for object ${objectId}`);
             yield data_model_1.default.insertMany(dataToInsert);
             yield analytics_service_1.default.checkAndNotifyAnomalies(objectId);
+            yield analytics_service_1.default.checkDailyLimit(objectId);
         });
     }
 }

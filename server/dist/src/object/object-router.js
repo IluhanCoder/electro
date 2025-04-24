@@ -11,5 +11,6 @@ objectRouter.post("/", object_controller_1.default.createObject);
 objectRouter.get("/user", object_controller_1.default.getUserObjects);
 objectRouter.get("/data/:objectId", data_controller_1.default.getObjectData);
 objectRouter.delete("/:objectId", object_controller_1.default.deleteObjectById);
+objectRouter.patch("/limit/:objectId", object_controller_1.default.setLimit);
 exports.default = objectRouter;
 //# sourceMappingURL=object-router.js.map

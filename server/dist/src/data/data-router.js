@@ -5,13 +5,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const data_controller_1 = __importDefault(require("./data-controller"));
+const get_counters_1 = require("./get-counters");
 const dataRouter = (0, express_1.Router)();
 dataRouter.post("/", data_controller_1.default.createData);
 dataRouter.get("/", data_controller_1.default.fetchUserData);
 dataRouter.get("/admin", data_controller_1.default.fetchDataForAdmin);
-dataRouter.get("/generate/:objectId", data_controller_1.default.generateDataforUser);
+dataRouter.post("/generate/:objectId", data_controller_1.default.generateDataforUser);
 dataRouter.get("/generate-instant/:objectId", data_controller_1.default.generateInstantDataforUser);
 dataRouter.post("/date-range", data_controller_1.default.getDataByDateRange);
 dataRouter.delete("/:dataId", data_controller_1.default.deleteDataById);
+dataRouter.get("/counters", get_counters_1.getAllCountersForService);
 exports.default = dataRouter;
 //# sourceMappingURL=data-router.js.map

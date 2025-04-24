@@ -31,6 +31,10 @@ const userSchema = new mongoose_1.default.Schema({
         required: true,
         unique: false,
     },
+    emailSubmited: {
+        type: Boolean,
+        default: false
+    },
     role: {
         type: String,
         enum: Object.values(user_types_1.Roles)

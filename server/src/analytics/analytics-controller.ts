@@ -50,6 +50,28 @@ class AnalyticsController {
         }
       }
       
+      async generateRegression(req: Request, res: Response) {
+        try {
+            const { userId, objectId } = req.body;
+            const result = await analyticService.generateRegression(userId, objectId);
+            res.json({ prediction: result.prediction, slope: result.slope, intercept: result.intercept });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message || "Помилка під час генерації прогнозу" });
+        }
+    }
+
+    async getOptimizationTips(req: Request, res: Response) {
+        const { userId, objectId } = req.body;
+        const tips = await analyticService.getOptimizationTips(userId, objectId);
+        res.json({ message: "Ось ваші поради", tips });
+    }
+
+    async getHistoricalComparison(req: Request, res: Response) {
+        const { userId, objectId } = req.body;
+        const result = await analyticService.getHistoricalComparison(userId, objectId);
+        res.json(result);
+    }
+    
     
 }
 

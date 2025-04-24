@@ -12,11 +12,12 @@ interface User extends Document {
     nickname: string,
     email: string,
     password: string,
-    role: Roles
+    role: Roles,
+    emailSubmited: boolean
 }
 
 export default User;
 
-export type UserResponse = Pick<User, '_id' | 'name' | 'surname' | 'nickname'>;
+export type UserResponse = Pick<User, '_id' | 'name' | 'surname' | 'nickname' | 'emailSubmited'>;
 export type UserCredentials = Pick<User, 'name' | 'surname' | 'nickname' | 'email'>;
 export type DetailedUserResponse = Omit<User, 'password'>;

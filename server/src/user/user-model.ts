@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
       required: true,
       unique: false,
     },
+    emailSubmited: {
+      type: Boolean,
+      default: false
+    },
     role: {
         type: String,
         enum: Object.values(Roles)

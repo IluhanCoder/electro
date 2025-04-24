@@ -15,9 +15,11 @@ const objectModel = new mongoose.Schema({
         required: false
     },
     name: String,
+    limit: {type: Number, required: false },
     }, {
         timestamps: true
     });
+
   
 const ObjectModel = mongoose.model('Object', objectModel);
   

@@ -6,10 +6,11 @@ export default interface Object extends Document {
     type: ConsumptionType,
     name: string,
     createdAt: Date,
-    updatedAt: Date
+    updatedAt: Date,
+    limit?: number
 }
 
-export interface ObjectCredentials extends Omit<Object, "_id" | "createdAt" | "updatedAt" | "owner"> {
+export interface ObjectCredentials extends Omit<Object, "_id" | "createdAt" | "updatedAt" | "owner" | "limit"> {
     owner: string
 }
 

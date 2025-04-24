@@ -33,7 +33,7 @@ class DataController {
             const {user} = req as AuthenticatedRequest;
             const userIsAdmin = await userService.isAdmin(user._id.toString());
             if(userIsAdmin) {
-                const data = dataService.fetchDataForAdmin();
+                const data = await dataService.fetchDataForAdmin();
                 return res.status(200).json({data, message: "success"});
             }
             throw UserError.WrongRole();
@@ -76,8 +76,9 @@ class DataController {
     async generateDataforUser(req: AuthenticatedRequest, res: Response, next: NextFunction) {
         try {
             const {user} = req;
+            const {counterIp} = req.body;
             const {objectId} = req.params;
-            await dataService.generateDataForUser(user._id.toString(), objectId);
+            await dataService.generateDataForUser(user._id.toString(), objectId, counterIp);
             return res.status(200).json({message: "success"});
         } catch (error) {
             next(error);

@@ -7,11 +7,13 @@ import objectService from "../object/object-service";
 import { faker } from "@faker-js/faker";
 import ObjectModel from "../object/object-model";
 import analyticService from "../analytics/analytics-service";
+import counterModel from "./counter-model";
 
 class DataService {
     async createData(credentials: DataCredentials) {
         await DataModel.create(credentials);
         await analyticService.checkAndNotifyAnomalies(credentials.object);
+        await analyticService.checkDailyLimit(credentials.object);
     }
 
     async fetchUserData(userId: string): Promise<DataResponse[]> {
@@ -51,7 +53,7 @@ class DataService {
         await DataModel.findByIdAndDelete(dataId);
     }
 
-    async generateDataForUser(userId: string, objectId: string) {
+    async generateDataForUser(userId: string, objectId: string, counterIp: string) {
         const INTERVAL_MS = 20 * 1000;
         const MINUTES_BACK = 60;
         const MAX_ENTRIES_PER_CATEGORY = 100;
@@ -92,6 +94,7 @@ class DataService {
     
         console.log(`Generated ${dataToInsert.length} records for object ${objectId}`);
         await DataModel.insertMany(dataToInsert);
+        if(counterIp) await counterModel.create({ip: counterIp, user: new mongoose.Types.ObjectId(userId), object: object._id});
     }
     
     async generateInstantDataForUser(userId: string, objectId: string) {
@@ -116,7 +119,9 @@ class DataService {
         console.log(`Generated ${dataToInsert.length} instant records for object ${objectId}`);
         await DataModel.insertMany(dataToInsert);
         await analyticService.checkAndNotifyAnomalies(objectId);
+        await analyticService.checkDailyLimit(objectId);
     }
+    
     
 }
 

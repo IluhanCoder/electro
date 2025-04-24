@@ -16,6 +16,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const object_model_1 = __importDefault(require("./object-model"));
 const object_error_1 = __importDefault(require("./object-error"));
 const data_service_1 = __importDefault(require("../data/data-service"));
+const user_service_1 = __importDefault(require("../user/user-service"));
 exports.default = new class ObjectService {
     createObject(credentials) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -30,7 +31,8 @@ exports.default = new class ObjectService {
     getUserObjects(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const convertedOwnerId = new mongoose_1.default.Types.ObjectId(userId);
-            return yield object_model_1.default.find({ owner: convertedOwnerId });
+            const isAdmin = yield user_service_1.default.isAdmin(userId);
+            return isAdmin ? yield object_model_1.default.find() : yield object_model_1.default.find({ owner: convertedOwnerId });
         });
     }
     deleteObjectById(objectId) {
@@ -40,6 +42,11 @@ exports.default = new class ObjectService {
                 yield data_service_1.default.deleteDataById(data._id.toString());
             }));
             yield object_model_1.default.findByIdAndDelete(objectId);
+        });
+    }
+    setLimit(objectId, limit) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield object_model_1.default.findByIdAndUpdate(objectId, { limit });
         });
     }
 };

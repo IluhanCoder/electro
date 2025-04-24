@@ -20,6 +20,7 @@ const objectModel = new mongoose_1.default.Schema({
         required: false
     },
     name: String,
+    limit: { type: Number, required: false },
 }, {
     timestamps: true
 });

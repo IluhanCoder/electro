@@ -34,6 +34,17 @@ class ObjectController {
             next(error);
         }
     }
+
+    async setLimit(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+        try {
+            const {objectId} = req.params;
+            const {limit} = req.body;
+            await objectService.setLimit(objectId, limit);
+            return res.status(200).json({message: "success"});
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 const objectController = new ObjectController();

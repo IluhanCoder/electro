@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const data_model_1 = __importDefault(require("../data/data-model"));
 const date_fns_1 = require("date-fns");
+const ml_regression_simple_linear_1 = require("ml-regression-simple-linear");
 class AnalyticsService {
     constructor() {
         this.intervalSeconds = 20;
@@ -37,9 +38,10 @@ class AnalyticsService {
                 const filter = {
                     date: { $gte: from, $lte: to }
                 };
-                if (userId)
+                const userIdAdmin = yield user_service_1.default.isAdmin(userId);
+                if (!userIdAdmin && userId)
                     filter.user = new mongoose_1.default.Types.ObjectId(userId);
-                if (objectId)
+                if (!userIdAdmin && objectId)
                     filter.object = new mongoose_1.default.Types.ObjectId(objectId);
                 console.log(filter);
                 const docs = yield data_model_1.default.aggregate([
@@ -88,9 +90,10 @@ class AnalyticsService {
                 const filter = {
                     date: { $gte: from, $lte: to }
                 };
-                if (userId)
+                const isAdmin = yield user_service_1.default.isAdmin(userId);
+                if (!isAdmin && userId)
                     filter.user = new mongoose_1.default.Types.ObjectId(userId);
-                if (objectId)
+                if (!isAdmin && objectId)
                     filter.object = new mongoose_1.default.Types.ObjectId(objectId);
                 const docs = yield data_model_1.default.aggregate([
                     { $match: filter },
@@ -146,9 +149,10 @@ class AnalyticsService {
                         date: { $gte: from, $lte: to },
                         category
                     };
-                    if (userId)
+                    const isAmin = yield user_service_1.default.isAdmin(userId);
+                    if (!isAmin && userId)
                         filter.user = new mongoose_1.default.Types.ObjectId(userId);
-                    if (objectId)
+                    if (!isAmin && objectId)
                         filter.object = new mongoose_1.default.Types.ObjectId(objectId);
                     const docs = yield data_model_1.default.aggregate([
                         { $match: filter },
@@ -214,6 +218,32 @@ class AnalyticsService {
             return result;
         });
     }
+    generateRegression(userId, objectId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const convertedUserId = new mongoose_1.default.Types.ObjectId(userId);
+            const convertedObjectId = new mongoose_1.default.Types.ObjectId(objectId);
+            // Отримуємо всі записи користувача по обʼєкту, впорядковані за датою
+            const dataPoints = yield data_model_1.default.find({
+                user: convertedUserId,
+                object: convertedObjectId
+            }).sort({ date: 1 });
+            if (dataPoints.length < 2) {
+                throw new Error("Недостатньо даних для прогнозу.");
+            }
+            // x — порядковий номер (час), y — amount
+            const x = dataPoints.map((_, i) => i);
+            const y = dataPoints.map(dp => dp.amount);
+            const regression = new ml_regression_simple_linear_1.SimpleLinearRegression(x, y);
+            // Прогноз на наступний період
+            const nextIndex = dataPoints.length;
+            const prediction = regression.predict(nextIndex);
+            return {
+                prediction: Number(prediction.toFixed(2)),
+                slope: Number(regression.slope.toFixed(4)),
+                intercept: Number(regression.intercept.toFixed(2)),
+            };
+        });
+    }
     checkAndNotifyAnomalies(objectId) {
         return __awaiter(this, void 0, void 0, function* () {
             const endDate = new Date();
@@ -237,11 +267,90 @@ class AnalyticsService {
             }
         });
     }
+    getOptimizationTips(userId, objectId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield data_model_1.default.find({ user: userId, object: objectId });
+            const currentObject = yield object_model_1.default.findById(objectId);
+            const similarObjects = yield object_model_1.default.find({ type: currentObject.type, _id: { $ne: objectId } });
+            const similarData = yield data_model_1.default.find({
+                object: { $in: similarObjects.map(obj => obj._id) }
+            });
+            // Обчислення середніх значень по категоріях
+            const tips = [];
+            const categories = Object.values(data_types_1.ConsumptionCategory);
+            for (const category of categories) {
+                const userCatData = data.filter(d => d.category === category);
+                const avgUser = userCatData.reduce((sum, d) => sum + d.amount, 0) / (userCatData.length || 1);
+                const similarCatData = similarData.filter(d => d.category === category);
+                const avgSimilar = similarCatData.reduce((sum, d) => sum + d.amount, 0) / (similarCatData.length || 1);
+                if (avgUser > avgSimilar * 1.2) {
+                    tips.push(`Ви витрачаєте більше енергії на ${category}. Розгляньте можливість використання енергоефективних пристроїв або змініть графік користування.`);
+                }
+            }
+            // Проста порада щодо тарифу
+            tips.push("Перевірте, чи використовуєте вигідний тарифний план. Деякі постачальники мають дешевші нічні тарифи.");
+            return tips;
+        });
+    }
+    getHistoricalComparison(userId, objectId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const now = new Date();
+            const past1Day = new Date(now);
+            past1Day.setDate(past1Day.getDate() - 1);
+            const convertedUserId = new mongoose_1.default.Types.ObjectId(userId);
+            const convertedObjectId = new mongoose_1.default.Types.ObjectId(objectId);
+            const recentData = yield data_model_1.default.find({
+                user: convertedUserId,
+                object: convertedObjectId,
+                date: { $gte: past1Day, $lte: now }
+            });
+            const historicalData = yield data_model_1.default.find({
+                user: convertedUserId,
+                object: convertedObjectId,
+                date: { $lt: past1Day }
+            });
+            const avgRecent = recentData.reduce((sum, d) => sum + d.amount, 0) / (recentData.length || 1);
+            const avgHistorical = historicalData.reduce((sum, d) => sum + d.amount, 0) / (historicalData.length || 1);
+            const status = avgRecent > avgHistorical
+                ? "вище"
+                : avgRecent < avgHistorical
+                    ? "нижче"
+                    : "на тому ж рівні";
+            return {
+                recentAverage: avgRecent,
+                historicalAverage: avgHistorical,
+                status
+            };
+        });
+    }
+    checkDailyLimit(objectId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const object = yield object_model_1.default.findById(objectId);
+            if (!object || !object.limit)
+                return;
+            console.log(object);
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+            const data = yield data_model_1.default.find({
+                object: new mongoose_1.default.Types.ObjectId(objectId),
+                date: { $gte: startOfDay, $lte: endOfDay }
+            });
+            const totalAmount = data.reduce((sum, d) => sum + d.amount, 0);
+            if (totalAmount > object.limit) {
+                const tips = yield this.getOptimizationTips(object.owner._id.toString(), objectId);
+                yield notification_service_1.default.createLimitExceededNotification(object.owner.toString(), objectId, totalAmount, object.limit, tips);
+            }
+        });
+    }
 }
 const analyticService = new AnalyticsService();
 const bind_all_1 = __importDefault(require("../helpers/bind-all"));
 const data_types_1 = require("../data/data-types");
 const notification_service_1 = __importDefault(require("../notifications/notification-service"));
+const object_model_1 = __importDefault(require("../object/object-model"));
+const user_service_1 = __importDefault(require("../user/user-service"));
 (0, bind_all_1.default)(analyticService);
 exports.default = analyticService;
 //# sourceMappingURL=analytics-service.js.map

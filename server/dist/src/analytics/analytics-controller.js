@@ -67,6 +67,32 @@ class AnalyticsController {
             }
         });
     }
+    generateRegression(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { userId, objectId } = req.body;
+                const result = yield analytics_service_1.default.generateRegression(userId, objectId);
+                res.json({ prediction: result.prediction, slope: result.slope, intercept: result.intercept });
+            }
+            catch (error) {
+                res.status(400).json({ message: error.message || "Помилка під час генерації прогнозу" });
+            }
+        });
+    }
+    getOptimizationTips(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { userId, objectId } = req.body;
+            const tips = yield analytics_service_1.default.getOptimizationTips(userId, objectId);
+            res.json({ message: "Ось ваші поради", tips });
+        });
+    }
+    getHistoricalComparison(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { userId, objectId } = req.body;
+            const result = yield analytics_service_1.default.getHistoricalComparison(userId, objectId);
+            res.json(result);
+        });
+    }
 }
 const analyticsController = new AnalyticsController();
 (0, bind_all_1.default)(analyticsController);

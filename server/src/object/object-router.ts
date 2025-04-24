@@ -8,5 +8,6 @@ objectRouter.post("/", objectController.createObject);
 objectRouter.get("/user", objectController.getUserObjects);
 objectRouter.get("/data/:objectId", dataController.getObjectData);
 objectRouter.delete("/:objectId", objectController.deleteObjectById);
+objectRouter.patch("/limit/:objectId", objectController.setLimit);
 
 export default objectRouter;

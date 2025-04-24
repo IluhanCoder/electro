@@ -52,6 +52,19 @@ class ObjectController {
             }
         });
     }
+    setLimit(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { objectId } = req.params;
+                const { limit } = req.body;
+                yield object_service_1.default.setLimit(objectId, limit);
+                return res.status(200).json({ message: "success" });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
 }
 const objectController = new ObjectController();
 (0, bind_all_1.default)(objectController);
